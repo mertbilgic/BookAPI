@@ -76,10 +76,10 @@ def update_book(isbn):
     request_data = request.get_json()
     book_data = {}
     index = 0
-    for indx,book in enumerate(books):
+    for index,book in enumerate(books):
         if book['isbn'] == isbn:
             book_data = book
-            index = indx
+            index = index
             break
     for k,v in request_data.items():
         if bool(book_data.get(k)):
@@ -89,6 +89,19 @@ def update_book(isbn):
     response = Response("",status=204)
     response.headers['Location'] = '/books/' + str(isbn)
 
+    return response
+
+@app.route('/books/<int:isbn>', methods=['DELETE'])
+def delete_book(isbn):
+    
+    for index, book in enumerate(books):
+        if book['isbn'] == isbn:
+            books.pop(index)
+        response = Response("",status=204)
+        return response
+
+    message = {'error':'ISBN number not found'}
+    response = Response(json.dumps(message),status=404,mimetype='applicaton/json')
     return response
 
 if __name__ == '__main__':
