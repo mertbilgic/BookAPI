@@ -38,7 +38,6 @@ def add_book():
         books.insert(0, new_book)
     else :
         response = Response(json.dumps(response_data),status=400,mimetype='applicaton/json')
-        
     return response
 
 @app.route('/books/<int:isbn>')
@@ -53,6 +52,44 @@ def get_book_by_isbn(isbn):
                 "isbn": book["isbn"]
             }
     return jsonify(return_value)
+
+@app.route('/books/<int:isbn>', methods=['PUT'])
+def replace_book(isbn):
+    request_data = request.get_json()
+    new_book = {
+        'name': request_data['name'],
+        'price': request_data['price'],
+        'author': request_data['author'],
+        'isbn':isbn
+    }
+    for i,book in enumerate(books):
+        if book['isbn'] == isbn:
+            books[i] = new_book
+            break
+    
+    response = Response("",status=204)
+
+    return response
+
+@app.route('/books/<int:isbn>', methods=['PATCH'])
+def update_book(isbn):
+    request_data = request.get_json()
+    book_data = {}
+    index = 0
+    for indx,book in enumerate(books):
+        if book['isbn'] == isbn:
+            book_data = book
+            index = indx
+            break
+    for k,v in request_data.items():
+        if bool(book_data.get(k)):
+            book_data[k] = v
+    books[index] = book_data
+
+    response = Response("",status=204)
+    response.headers['Location'] = '/books/' + str(isbn)
+
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
