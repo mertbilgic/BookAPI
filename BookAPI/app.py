@@ -1,10 +1,8 @@
 from flask import Flask, jsonify, request, Response
 from helpers import response_helpers as rp
 from helpers import data_cleaner_helpers as cl
+from settings import *
 import json
-
-app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
 
 books = [
     {
