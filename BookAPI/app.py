@@ -1,89 +1,60 @@
 from flask import Flask, jsonify, request, Response
 from helpers import response_helpers as rp
 from helpers import data_cleaner_helpers as cl
+from model.book_model import Book
 from settings import *
 import json
 
-books = [
-    {
-        'name': 'Veri Yapıları ve Algoritmalar',
-        'price': 65,
-        'author': 'Rıfat Çölkesen',
-        'isbn': 987654321
-    },
-    {
-        'name': 'Steve Jobs',
-        'price': 50,
-        'author': 'Walter Isaacson',
-        'isbn': 123456789
-    }
-]
+
+@app.route('/')
+def index():
+    return "This is BookAPI"
 
 @app.route('/books')
 def get_books():
-    return jsonify({'books':books})
+    return jsonify({'books': Book.get_all_book()})
 
 @app.route('/books',methods=['POST'])
 def add_book():
     request_data = request.get_json()
     response_data,valid = rp.craate_response(request_data)
-    response = ""
-
     if valid:
+        Book.add_book(request_data['name'], request_data['price'], request_data['isbn'], request_data['author'])
         response = Response(json.dumps(response_data),status=201,mimetype='applicaton/json')
-        new_book = cl.data_cleaner(request_data)
-        response.headers['Location'] = '/books/' + str(new_book['isbn'])
-        books.insert(0, new_book)
+        response.headers['Location'] = '/books/' + str(request_data['isbn'])
+        return response
     else :
         response = Response(json.dumps(response_data),status=400,mimetype='applicaton/json')
-    return response
+        return response
 
 @app.route('/books/<int:isbn>')
 def get_book_by_isbn(isbn):
-    return_value = {}
-    for book in books:
-        if book['isbn'] == isbn:
-            return_value = {
-                'author': book['author'],
-                'name': book['name'],
-                'price': book['price'],
-                "isbn": book["isbn"]
-            }
+    return_value = Book.get_book_json(isbn)
     return jsonify(return_value)
 
 @app.route('/books/<int:isbn>', methods=['PUT'])
-def replace_book(isbn):
+def update_book_all_elements(isbn):
     request_data = request.get_json()
-    new_book = {
-        'name': request_data['name'],
-        'price': request_data['price'],
-        'author': request_data['author'],
-        'isbn':isbn
-    }
-    for i,book in enumerate(books):
-        if book['isbn'] == isbn:
-            books[i] = new_book
-            break
+    response_data,valid = rp.craate_response(request_data)
     
+    if not valid:
+        response = Response(json.dump(response_data),status=400,mimetype='applicaton/json')
+        return response
+    
+    Book.update_book(isbn, request_data['name'], request_data['price'], request_data['author'])
     response = Response("",status=204)
-
     return response
 
 @app.route('/books/<int:isbn>', methods=['PATCH'])
 def update_book(isbn):
     request_data = request.get_json()
-    book_data = {}
-    index = 0
-    for index,book in enumerate(books):
-        if book['isbn'] == isbn:
-            book_data = book
-            index = index
-            break
+    book_data = Book.get_book_json(isbn)
+
     for k,v in request_data.items():
         if bool(book_data.get(k)):
             book_data[k] = v
-    books[index] = book_data
-
+    
+    Book.update_book(isbn, book_data['name'], book_data['price'], book_data['author'])
     response = Response("",status=204)
     response.headers['Location'] = '/books/' + str(isbn)
 
@@ -91,10 +62,8 @@ def update_book(isbn):
 
 @app.route('/books/<int:isbn>', methods=['DELETE'])
 def delete_book(isbn):
-    
-    for index, book in enumerate(books):
-        if book['isbn'] == isbn:
-            books.pop(index)
+
+    if(Book.delete_book(isbn)):
         response = Response("",status=204)
         return response
 
