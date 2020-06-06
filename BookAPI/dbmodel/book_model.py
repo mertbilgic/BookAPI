@@ -9,7 +9,7 @@ db = SQLAlchemy(app)
     Create db model
 
     $python3
-    >>> from model.book_model import db
+    >>> from dbmodel.book_model import db
     >>> db.create_all()
     >>> exit()
 

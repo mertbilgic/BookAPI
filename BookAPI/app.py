@@ -1,20 +1,53 @@
 from flask import Flask, jsonify, request, Response
 from helpers import response_helpers as rp
 from helpers import data_cleaner_helpers as cl
-from model.book_model import Book
-from settings import *
-import json
+from dbmodel.book_model import Book
+from dbmodel.user_model import User
+from settings import app,SECRET_KEY,DEFAULT_PAGE_LIMIT
+from helpers.token_helper import *
+import json, jwt, datetime
 
 
 @app.route('/')
 def index():
     return "This is BookAPI"
 
+@app.route('/login')
+def get_token():
+    request_data = request.get_json()
+    try:
+        username = request_data['username']
+        password = request_data['password']
+    except TypeError:
+        return jsonify({"helper": "Data passed in similar to this {'username':'test','password':'password'}"})
+    
+    match = User.username_password_match(username, password)
+    if match:
+        expretaion_date = datetime.datetime.now() + datetime.timedelta(seconds=100)
+        token = jwt.encode({'exp': expretaion_date}, SECRET_KEY, algorithm='HS256')
+        return token
+    else:
+        return Response('',401,mimetype='application/json')
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    request_data = request.get_json()
+    try:
+        username = request_data['username']
+        password = request_data['password']
+    except ValueError:
+        return jsonify({"helper": "Data passed in similar to this {'username':'test','password':'password'}"})
+    User.create_user(username, password)
+
+    response = Response("",status=204)
+    return response
+
 @app.route('/books')
 def get_books():
     return jsonify({'books': Book.get_all_book()})
 
 @app.route('/books',methods=['POST'])
+@token_required
 def add_book():
     request_data = request.get_json()
     response_data,valid = rp.craate_response(request_data)
@@ -33,6 +66,7 @@ def get_book_by_isbn(isbn):
     return jsonify(return_value)
 
 @app.route('/books/<int:isbn>', methods=['PUT'])
+@token_required
 def update_book_all_elements(isbn):
     request_data = request.get_json()
     response_data,valid = rp.craate_response(request_data)
@@ -46,6 +80,7 @@ def update_book_all_elements(isbn):
     return response
 
 @app.route('/books/<int:isbn>', methods=['PATCH'])
+@token_required
 def update_book(isbn):
     request_data = request.get_json()
     book_data = Book.get_book_json(isbn)
@@ -61,6 +96,7 @@ def update_book(isbn):
     return response
 
 @app.route('/books/<int:isbn>', methods=['DELETE'])
+@token_required
 def delete_book(isbn):
 
     if(Book.delete_book(isbn)):
