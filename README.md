@@ -22,7 +22,7 @@ $ pip install -r requirements.txt
 ### Start
 
 ```sh
-$ python app.py 
+$ python manage.py runserver
 ```
 
 ##### Hello World
@@ -35,7 +35,7 @@ This is BookAPI
 Kütüphanedeki kitapları listelemek için aşağıdaki komutu kullanırız.
 ```sh
 # GET /books
-curl http://127.0.0.1:5000/books
+curl http://127.0.0.1:5000/api/v1/books
 {
   "books": [
     {
@@ -51,7 +51,7 @@ API mızın sonucuna baktığımızda JSON olmasını bekliyoruz.API'nin header'
 
 ```sh
 # GET /books
-curl -i http://127.0.0.1:5000/books
+curl -i http://127.0.0.1:5000/api/v1/books
 {
 HTTP/1.0 200 OK
 Content-Type: application/json
@@ -75,7 +75,7 @@ Beklendiği gibi, Content-Type application/json'dur.
 Kütüphanedeki kitapları ISBN numarası ile listelemek için aşağıdaki komutu kullanırız.
 ```sh
 # GET /books<int:isbn>
-curl http://127.0.0.1:5000/books/123123321
+curl http://127.0.0.1:5000/api/v1/books/123123321
 {
   "books": [
     {
@@ -90,7 +90,7 @@ curl http://127.0.0.1:5000/books/123123321
 BookAPI'daki diğer endpoint'lere request atabilmemiz için token'a ihtiyacımız var.Bunun için BookAPI'a kayıt oluyoruz.Response kodu 204 olduğu için bize herhangi bir içerik dönmez.
 ```sh
 # POST /signup
-curl -X POST http://localhost:5000/signup \
+curl -X POST http://localhost:5000/api/v1/signup \
 -d '{
   "username":"testuser", 
   "password":"123456"
@@ -101,7 +101,7 @@ curl -X POST http://localhost:5000/signup \
 BookAPI'a login olduğumuzda response olarak bize bir token döner.Bu token'ı diğer requestlerimizde kullacağız.
 ```sh
 # GET /login
-curl -X GET http://localhost:5000/login \
+curl -X GET http://localhost:5000/api/v1/login \
 -d '{
   "username":"testuser", 
   "password":"123456"
@@ -114,7 +114,7 @@ Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDIwNjJ9.QQeSUCA6Ox2
 Kütüphaneye yeni bir kitab eklemek için aşadağıdaki komutu kullanabiliriz.
 ```sh
 # POST/books
-curl -X POST 'http://127.0.0.1:5000/books?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
+curl -X POST 'http://127.0.0.1:5000/api/v1/books?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
 -H 'Content-Type: application/json' \
 -d'{
 	"name": "New Add Test Book",
@@ -137,14 +137,14 @@ Result:
 Kütüphanedeki bir kitabı silmek için aşadağıdaki komutu kullanabiliriz.
 ```sh
 # DELETE /books<int:isbn>
-curl --location -X DELETE 'http://127.0.0.1:5000/books/987654321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
+curl --location -X DELETE 'http://127.0.0.1:5000/api/v1/books/987654321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
 -H 'Content-Type: application/json' \
 ```
 
 Kütüphanedeki bir kitabı replace etmek için aşadağıdaki komutu kullanabiliriz.
 ```sh
 # PUT /books<int:isbn>
-curl -X PUT 'http://127.0.0.1:5000/books/123123321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \ 
+curl -X PUT 'http://127.0.0.1:5000/books/api/v1/123123321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \ 
 -H "Content-Type: application/json" \
 -d '{
         "name": "New Test Book",
@@ -156,7 +156,7 @@ curl -X PUT 'http://127.0.0.1:5000/books/123123321?token=eyJ0eXAiOiJKV1QiLCJhbGc
 Kütüphanedeki bir kitabın değerlerinin bir kısmını replace etmek için aşadağıdaki komutu kullanabiliriz.
 ```sh
 # PATCH /books<int:isbn>
-curl -X PATCH 'http://127.0.0.1:5000/books/123123321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
+curl -X PATCH 'http://127.0.0.1:5000/api/v1/books/123123321?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1OTQ5MDgxNzZ9.v9sASWb0WJeDjuad4hWwth8jjpsAe85hh1O09-UyHOs%20%20' \
 -H 'Content-Type: application/json' \
 -d'{
 	"name": "New Add Test PATCH"
