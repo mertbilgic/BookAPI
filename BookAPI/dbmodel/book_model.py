@@ -1,9 +1,8 @@
 import json
 from flask import Flask
-from settings import app
+from bookapi import db
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy(app)
 
 """
     Create db model

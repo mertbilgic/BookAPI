@@ -1,4 +1,4 @@
-from settings import SECRET_KEY
+from bookapi import SECRET_KEY
 from functools import wraps,update_wrapper
 from flask import request,jsonify
 from jwt import decode

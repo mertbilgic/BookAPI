@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from settings import app
+from bookapi import app
 
 db = SQLAlchemy(app)
 

@@ -1,18 +1,21 @@
-from flask import Flask, jsonify, request, Response
-from helpers import response_helpers as rp
-from helpers import data_cleaner_helpers as cl
-from dbmodel.book_model import Book
-from dbmodel.user_model import User
-from settings import app,SECRET_KEY,DEFAULT_PAGE_LIMIT
-from helpers.token_helper import *
-import json, jwt, datetime
+
+import json
+import datetime
+
+from flask import Flask, jsonify, request, Response,Blueprint
+import jwt
+
+from bookapi.helpers import response_helpers as rp
+from bookapi.helpers import data_cleaner_helpers as cl
+from bookapi.dbmodel.book_model import Book
+from bookapi.dbmodel.user_model import User
+from bookapi import app,SECRET_KEY,DEFAULT_PAGE_LIMIT
+from bookapi.helpers.token_helper import *
 
 
-@app.route('/')
-def index():
-    return "This is BookAPI"
+api_v1 = Blueprint('api_v1', __name__, url_prefix="/api/v1")
 
-@app.route('/login')
+@api_v1.route('/login')
 def get_token():
     request_data = request.get_json()
     try:
@@ -29,7 +32,7 @@ def get_token():
     else:
         return Response('',401,mimetype='application/json')
 
-@app.route('/signup', methods=['POST'])
+@api_v1.route('/signup', methods=['POST'])
 def signup():
     request_data = request.get_json()
     try:
@@ -42,11 +45,11 @@ def signup():
     response = Response("",status=204)
     return response
 
-@app.route('/books')
+@api_v1.route('/books')
 def get_books():
     return jsonify({'books': Book.get_all_book()})
 
-@app.route('/books',methods=['POST'])
+@api_v1.route('/books',methods=['POST'])
 @token_required
 def add_book():
     request_data = request.get_json()
@@ -60,12 +63,12 @@ def add_book():
         response = Response(json.dumps(response_data),status=400,mimetype='applicaton/json')
         return response
 
-@app.route('/books/<int:isbn>')
+@api_v1.route('/books/<int:isbn>')
 def get_book_by_isbn(isbn):
     return_value = Book.get_book_json(isbn)
     return jsonify(return_value)
 
-@app.route('/books/<int:isbn>', methods=['PUT'])
+@api_v1.route('/books/<int:isbn>', methods=['PUT'])
 @token_required
 def update_book_all_elements(isbn):
     request_data = request.get_json()
@@ -79,7 +82,7 @@ def update_book_all_elements(isbn):
     response = Response("",status=204)
     return response
 
-@app.route('/books/<int:isbn>', methods=['PATCH'])
+@api_v1.route('/books/<int:isbn>', methods=['PATCH'])
 @token_required
 def update_book(isbn):
     request_data = request.get_json()
@@ -95,7 +98,7 @@ def update_book(isbn):
 
     return response
 
-@app.route('/books/<int:isbn>', methods=['DELETE'])
+@api_v1.route('/books/<int:isbn>', methods=['DELETE'])
 @token_required
 def delete_book(isbn):
 
@@ -106,6 +109,3 @@ def delete_book(isbn):
     message = {'error':'ISBN number not found'}
     response = Response(json.dumps(message),status=404,mimetype='applicaton/json')
     return response
-
-if __name__ == '__main__':
-    app.run(debug=True)
