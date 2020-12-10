@@ -9,7 +9,7 @@ from bookapi.helpers import response_helpers as rp
 from bookapi.helpers import data_cleaner_helpers as cl
 from bookapi.dbmodel.book_model import Book
 from bookapi.dbmodel.user_model import User
-from bookapi import app,SECRET_KEY,DEFAULT_PAGE_LIMIT
+from bookapi import app
 from bookapi.helpers.token_helper import *
 
 
@@ -27,7 +27,7 @@ def get_token():
     match = User.username_password_match(username, password)
     if match:
         expretaion_date = datetime.datetime.now() + datetime.timedelta(seconds=100)
-        token = jwt.encode({'exp': expretaion_date}, SECRET_KEY, algorithm='HS256')
+        token = jwt.encode({'exp': expretaion_date}, app.config['SECRET_KEY'], algorithm='HS256')
         return token
     else:
         return Response('',401,mimetype='application/json')
